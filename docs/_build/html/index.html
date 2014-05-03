@@ -1,0 +1,221 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Bambu WeHhooks &mdash; Bambu Webhooks 2.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Bambu Webhooks 2.0 documentation" href="#" />
+    <link rel="next" title="Cron job" href="cron.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cron.html" title="Cron job"
+             accesskey="N">next</a> |</li>
+        <li><a href="#">Bambu Webhooks 2.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="bambu-wehhooks">
+<h1>Bambu WeHhooks<a class="headerlink" href="#bambu-wehhooks" title="Permalink to this headline">¶</a></h1>
+<p>Create webhooks and allow users to assign URLs to them</p>
+<div class="section" id="about-bambu-webhooks">
+<h2>About Bambu Webhooks<a class="headerlink" href="#about-bambu-webhooks" title="Permalink to this headline">¶</a></h2>
+<p>This package allows web apps to provide third-party integration via
+webhooks. You as the developer can trigger a webhook by name, and
+provide an interface whereby the user can manage the URL to post the
+webhook&#8217;s data to.</p>
+</div>
+<div class="section" id="about-bambu-tools-2-0">
+<h2>About Bambu Tools 2.0<a class="headerlink" href="#about-bambu-tools-2-0" title="Permalink to this headline">¶</a></h2>
+<p>This is part of a toolset called Bambu Tools. It&#8217;s being moved from a
+namespace of <tt class="docutils literal"><span class="pre">bambu</span></tt> to its own &#8216;root-level&#8217; package, along with all
+the other tools in the set. If you&#8217;re upgrading from a version prior to
+2.0, please make sure to update your code to use <tt class="docutils literal"><span class="pre">bambu_webhooks</span></tt>
+rather than <tt class="docutils literal"><span class="pre">bambu.webhooks</span></tt>.</p>
+</div>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>Install the package via Pip:</p>
+<div class="highlight-python"><div class="highlight"><pre>pip install bambu-webhooks
+</pre></div>
+</div>
+<p>Add it to your <tt class="docutils literal"><span class="pre">INSTALLED_APPS</span></tt> list:</p>
+<div class="highlight-python"><div class="highlight"><pre>INSTALLED_APPS = (
+    ...
+    &#39;bambu_webhooks&#39;
+)
+</pre></div>
+</div>
+<p>Add <tt class="docutils literal"><span class="pre">bambu_webhooks.urls</span></tt> to your URLconf:</p>
+<div class="highlight-python"><div class="highlight"><pre>urlpatterns = patterns(&#39;&#39;,
+    ...
+    url(r&#39;^webhooks/&#39;, include(&#39;bambu_webhooks.urls&#39;)),
+)
+</pre></div>
+</div>
+<p>Run <tt class="docutils literal"><span class="pre">manage.py</span> <span class="pre">syncdb</span></tt> or <tt class="docutils literal"><span class="pre">manage.py</span> <span class="pre">migrate</span></tt> to setup the database
+tables.</p>
+</div>
+<div class="section" id="basic-usage">
+<h2>Basic usage<a class="headerlink" href="#basic-usage" title="Permalink to this headline">¶</a></h2>
+<p>Register a webhook within your models.py file.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">hashlib</span> <span class="kn">import</span> <span class="n">md5</span>
+<span class="kn">import</span> <span class="nn">bambu_webhooks</span>
+
+<span class="n">bambu_webhooks</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s">&#39;webhook_name_&#39;</span><span class="p">,</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="s">&#39;A description of the webhook&#39;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>In the <tt class="docutils literal"><span class="pre">save()</span></tt> method for your model, trigger any webhooks that have
+receivers attached, thus posting the data to the user&#8217;s specified URL.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="o">...</span>
+    <span class="n">bambu_webhooks</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s">&#39;webhook_name_&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">author</span><span class="p">,</span>
+        <span class="p">{</span>
+            <span class="s">&#39;id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span>
+            <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        <span class="p">},</span>
+        <span class="n">md5</span><span class="p">(</span><span class="s">&#39;testproject.myapp.mymodel:</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="better-with-bootstrap">
+<h2>Better with Bootstrap<a class="headerlink" href="#better-with-bootstrap" title="Permalink to this headline">¶</a></h2>
+<p>This package, among most in the Bambu toolset is designed to work with
+<a class="reference external" href="https://github.com/iamsteadman/bambu-bootstrap">Bambu Bootstrap</a>, a
+collection of flexible templates designed for web apps based on the
+Twitter Bootstrap framework. It&#8217;s not a package requirement, but it&#8217;ll
+mean the template structure and the context variables exposed by the
+view makes a little more sense.</p>
+</div>
+<div class="section" id="todo">
+<h2>Todo<a class="headerlink" href="#todo" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Allow webhooks to be categorised and/or filtered</li>
+<li>Prepare for internationalisation</li>
+<li>Write tests</li>
+</ul>
+</div>
+<div class="section" id="questions-or-suggestions">
+<h2>Questions or suggestions?<a class="headerlink" href="#questions-or-suggestions" title="Permalink to this headline">¶</a></h2>
+<p>Find me on Twitter (&#64;iamsteadman) or <a class="reference external" href="http://steadman.io/">visit my blog</a>.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="cron.html">Cron job</a></li>
+<li class="toctree-l1"><a class="reference internal" href="menus.html">Menus</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Models</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Bambu WeHhooks</a><ul>
+<li><a class="reference internal" href="#about-bambu-webhooks">About Bambu Webhooks</a></li>
+<li><a class="reference internal" href="#about-bambu-tools-2-0">About Bambu Tools 2.0</a></li>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#basic-usage">Basic usage</a></li>
+<li><a class="reference internal" href="#better-with-bootstrap">Better with Bootstrap</a></li>
+<li><a class="reference internal" href="#todo">Todo</a></li>
+<li><a class="reference internal" href="#questions-or-suggestions">Questions or suggestions?</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <h4>Next topic</h4>
+  <p class="topless"><a href="cron.html"
+                        title="next chapter">Cron job</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cron.html" title="Cron job"
+             >next</a> |</li>
+        <li><a href="#">Bambu Webhooks 2.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Steadman.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>
