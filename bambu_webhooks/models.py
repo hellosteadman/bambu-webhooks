@@ -6,10 +6,6 @@ import requests, logging
 
 LOGGER = logging.getLogger('bambu_webhooks')
 
-class CustomTitleString(str):
-    def title(self):
-        return str(self[6:]).title()
-
 class Receiver(models.Model):
     """
     A callback (or receiver) for a webhook call
@@ -43,7 +39,6 @@ class Receiver(models.Model):
         unique_together = ('url', 'hook', 'user')
         ordering = ('hook',)
         db_table = 'webhooks_receiver'
-        app_label = CustomTitleString('bambu_webhooks')
 
 class Action(models.Model):
     """
@@ -89,4 +84,3 @@ class Action(models.Model):
     
     class Meta:
         db_table = 'webhooks_action'
-        app_label = CustomTitleString('bambu_webhooks')
