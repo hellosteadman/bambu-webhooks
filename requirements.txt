@@ -1,3 +1,3 @@
-Django>=1.4
+Django>=1.8
 requests
-bambu-cron>=2.0
+bambu-cron>=3.0

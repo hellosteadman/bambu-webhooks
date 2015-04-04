@@ -4,16 +4,16 @@ from os import path
 
 setup(
     name = 'bambu-webhooks',
-    version = '2.0',
+    version = '3.0',
     description = 'Create webhooks and allow users to assign URLs to them',
     author = 'Steadman',
     author_email = 'mark@steadman.io',
     url = 'https://github.com/iamsteadman/bambu-webhooks',
     long_description = open(path.join(path.dirname(__file__), 'README')).read(),
     install_requires = [
-        'Django>=1.4',
+        'Django>=1.8',
         'requests',
-        'bambu-cron>=2.0'
+        'bambu-cron>=3.0'
     ],
     packages = [
         'bambu_webhooks',

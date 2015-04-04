@@ -1,99 +1,49 @@
 # -*- coding: utf-8 -*-
-import datetime
-from south.db import db
-from south.v2 import SchemaMigration
-from django.db import models
+from __future__ import unicode_literals
+
+from django.db import models, migrations
+from django.conf import settings
 
 
-class Migration(SchemaMigration):
+class Migration(migrations.Migration):
 
-    def forwards(self, orm):
-        # Adding model 'Receiver'
-        db.create_table('webhooks_receiver', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('user', self.gf('django.db.models.fields.related.ForeignKey')(related_name='webhooks', to=orm['auth.User'])),
-            ('hook', self.gf('django.db.models.fields.CharField')(max_length=100, db_index=True)),
-            ('url', self.gf('django.db.models.fields.URLField')(max_length=255, db_index=True)),
-            ('last_called', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
-        ))
-        db.send_create_signal('bambu_webhooks', ['Receiver'])
+    dependencies = [
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+    ]
 
-        # Adding unique constraint on 'Receiver', fields ['url', 'hook', 'user']
-        db.create_unique('webhooks_receiver', ['url', 'hook', 'user_id'])
-
-        # Adding model 'Action'
-        db.create_table('webhooks_action', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('receiver', self.gf('django.db.models.fields.related.ForeignKey')(related_name='actions', to=orm['bambu_webhooks.Receiver'])),
-            ('hash', self.gf('django.db.models.fields.CharField')(db_index=True, max_length=100, null=True, blank=True)),
-            ('data', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
-        ))
-        db.send_create_signal('bambu_webhooks', ['Action'])
-
-
-    def backwards(self, orm):
-        # Removing unique constraint on 'Receiver', fields ['url', 'hook', 'user']
-        db.delete_unique('webhooks_receiver', ['url', 'hook', 'user_id'])
-
-        # Deleting model 'Receiver'
-        db.delete_table('webhooks_receiver')
-
-        # Deleting model 'Action'
-        db.delete_table('webhooks_action')
-
-
-    models = {
-        u'auth.group': {
-            'Meta': {'object_name': 'Group'},
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '80'}),
-            'permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'})
-        },
-        u'auth.permission': {
-            'Meta': {'ordering': "(u'content_type__app_label', u'content_type__model', u'codename')", 'unique_together': "((u'content_type', u'codename'),)", 'object_name': 'Permission'},
-            'codename': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['contenttypes.ContentType']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
-        },
-        u'auth.user': {
-            'Meta': {'object_name': 'User'},
-            'date_joined': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'blank': 'True'}),
-            'first_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
-            'groups': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "u'user_set'", 'blank': 'True', 'to': u"orm['auth.Group']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'is_staff': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'is_superuser': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'last_login': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'last_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
-            'password': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
-            'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "u'user_set'", 'blank': 'True', 'to': u"orm['auth.Permission']"}),
-            'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'})
-        },
-        'bambu_webhooks.action': {
-            'Meta': {'object_name': 'Action', 'db_table': "'webhooks_action'"},
-            'data': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'hash': ('django.db.models.fields.CharField', [], {'db_index': 'True', 'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'receiver': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'actions'", 'to': "orm['bambu_webhooks.Receiver']"})
-        },
-        'bambu_webhooks.receiver': {
-            'Meta': {'ordering': "('hook',)", 'unique_together': "(('url', 'hook', 'user'),)", 'object_name': 'Receiver', 'db_table': "'webhooks_receiver'"},
-            'hook': ('django.db.models.fields.CharField', [], {'max_length': '100', 'db_index': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'last_called': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'url': ('django.db.models.fields.URLField', [], {'max_length': '255', 'db_index': 'True'}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'webhooks'", 'to': u"orm['auth.User']"})
-        },
-        u'contenttypes.contenttype': {
-            'Meta': {'ordering': "('name',)", 'unique_together': "(('app_label', 'model'),)", 'object_name': 'ContentType', 'db_table': "'django_content_type'"},
-            'app_label': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
-        }
-    }
-
-    complete_apps = ['bambu_webhooks']
+    operations = [
+        migrations.CreateModel(
+            name='Action',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('hash', models.CharField(db_index=True, max_length=100, null=True, blank=True)),
+                ('data', models.TextField(null=True, blank=True)),
+            ],
+            options={
+                'db_table': 'webhooks_action',
+            },
+        ),
+        migrations.CreateModel(
+            name='Receiver',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('hook', models.CharField(db_index=True, max_length=100, choices=[(b'post_published', b'Post published')])),
+                ('url', models.URLField(max_length=255, db_index=True)),
+                ('last_called', models.DateTimeField(null=True, blank=True)),
+                ('user', models.ForeignKey(related_name='webhooks', to=settings.AUTH_USER_MODEL)),
+            ],
+            options={
+                'ordering': ('hook',),
+                'db_table': 'webhooks_receiver',
+            },
+        ),
+        migrations.AddField(
+            model_name='action',
+            name='receiver',
+            field=models.ForeignKey(related_name='actions', to='bambu_webhooks.Receiver'),
+        ),
+        migrations.AlterUniqueTogether(
+            name='receiver',
+            unique_together=set([('url', 'hook', 'user')]),
+        ),
+    ]
